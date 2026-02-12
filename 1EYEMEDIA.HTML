@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1Eye Media | Engineered Digital Infrastructure</title>
+    
+    <!-- Fonts -->
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#0a0a0f',
+                        accent: '#00bfff',
+                        'accent-dim': 'rgba(0, 191, 255, 0.1)',
+                        surface: 'rgba(255, 255, 255, 0.03)',
+                        textprimary: '#f5f5f5',
+                        textsecondary: '#c5c5c5',
+                    },
+                    fontFamily: {
+                        display: ['"Clash Display"', 'sans-serif'],
+                        body: ['"Space Grotesk"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    },
+                    animation: {
+                        'spin-slow': 'spin 12s linear infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --accent-glow: 0 0 20px rgba(0, 191, 255, 0.3);
+            --border-glow: 1px solid rgba(0, 191, 255, 0.2);
+        }
+
+        body {
+            background-color: #0a0a0f;
+            color: #f5f5f5;
+            overflow-x: hidden;
+        }
+
+        /* Marquee Animation */
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .animate-marquee {
+            display: inline-flex;
+            animation: marquee 20s linear infinite;
+        }
+
+        /* Star Field */
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: twinkle var(--duration) ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: var(--opacity); transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5); }
+        }
+
+        /* Shooting Star Animation */
+        .shooting-star {
+            position: absolute;
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.8), #00bfff);
+            opacity: 0;
+            filter: drop-shadow(0 0 3px rgba(0, 191, 255, 0.5));
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes shoot {
+            0% {
+                transform: translate(0, 0) rotate(135deg) scaleX(0.5);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(135deg) scaleX(1);
+            }
+            100% {
+                transform: translate(-500px, 500px) rotate(135deg) scaleX(1);
+                opacity: 0;
+            }
+        }
+
+        /* 3D Grid Floor */
+        .perspective-grid {
+            position: absolute;
+            bottom: -30%;
+            left: -50%;
+            width: 200%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(0, 191, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 191, 255, 0.05) 1px, transparent 1px);
+            background-size: 60px 60px;
+            transform: perspective(1000px) rotateX(75deg);
+            transform-origin: center top;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 40%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 40%, transparent 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Ambient Glows */
+        .ambient-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 191, 255, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Utilities */
+        .glass-panel {
+            background: rgba(10, 10, 15, 0.6);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-hover {
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .card-hover:hover {
+            border-color: rgba(0, 191, 255, 0.4);
+            box-shadow: 0 0 30px rgba(0, 191, 255, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-primary:hover::after {
+            left: 100%;
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(0, 191, 255, 0.3);
+        }
+
+        /* Input Autofill Fix */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        textarea:-webkit-autofill,
+        textarea:-webkit-autofill:hover,
+        textarea:-webkit-autofill:focus {
+            -webkit-text-fill-color: #f5f5f5;
+            -webkit-box-shadow: 0 0 0px 1000px #0e0e14 inset;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -4px;
+            left: 0;
+            background-color: #00bfff;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0f;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-1 3s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 #00bfff;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip: rect(20px, 9999px, 36px, 0); }
+            20% { clip: rect(65px, 9999px, 72px, 0); }
+            40% { clip: rect(10px, 9999px, 25px, 0); }
+            60% { clip: rect(95px, 9999px, 80px, 0); }
+            80% { clip: rect(40px, 9999px, 60px, 0); }
+            100% { clip: rect(80px, 9999px, 90px, 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(90px, 9999px, 100px, 0); }
+            20% { clip: rect(10px, 9999px, 30px, 0); }
+            40% { clip: rect(50px, 9999px, 55px, 0); }
+            60% { clip: rect(30px, 9999px, 40px, 0); }
+            80% { clip: rect(70px, 9999px, 80px, 0); }
+            100% { clip: rect(20px, 9999px, 10px, 0); }
+        }
+    </style>
+</head>
+<body class="font-body selection:bg-accent selection:text-void antialiased">
+
+    <!-- Top Marquee Banner -->
+    <div class="fixed top-0 left-0 w-full h-8 bg-accent/5 border-b border-accent/20 z-[60] flex items-center overflow-hidden backdrop-blur-sm">
+        <div class="animate-marquee whitespace-nowrap">
+            <!-- Repeated text for seamless loop -->
+            <span class="text-[10px] font-bold tracking-[0.2em] text-accent uppercase mx-4">
+                /// CHALLENGING THE BIGGEST COMPETITORS IN THE TECH INDUSTRY
+            </span>
+            <span class="text-[10px] font-bold tracking-[0.2em] text-accent uppercase mx-4">
+                /// CHALLENGING THE BIGGEST COMPETITORS IN THE TECH INDUSTRY
+            </span>
+            <span class="text-[10px] font-bold tracking-[0.2em] text-accent uppercase mx-4">
+                /// CHALLENGING THE BIGGEST COMPETITORS IN THE TECH INDUSTRY
+            </span>
+            <span class="text-[10px] font-bold tracking-[0.2em] text-accent uppercase mx-4">
+                /// CHALLENGING THE BIGGEST COMPETITORS IN THE TECH INDUSTRY
+            </span>
+            <span class="text-[10px] font-bold tracking-[0.2em] text-accent uppercase mx-4">
+                /// CHALLENGING THE BIGGEST COMPETITORS IN THE TECH INDUSTRY
+            </span>
+            <span class="text-[10px] font-bold tracking-[0.2em] text-accent uppercase mx-4">
+                /// CHALLENGING THE BIGGEST COMPETITORS IN THE TECH INDUSTRY
+            </span>
+        </div>
+    </div>
+
+    <!-- Background Elements -->
+    <div id="star-container" class="fixed inset-0 z-0 pointer-events-none"></div>
+    <div id="shooting-star-container" class="fixed inset-0 z-0 pointer-events-none overflow-hidden"></div>
+    <div class="fixed top-[-20%] left-[-10%] ambient-glow opacity-40"></div>
+    <div class="fixed bottom-[-20%] right-[-10%] ambient-glow opacity-30"></div>
+
+    <!-- Navigation (Moved down to accommodate banner) -->
+    <nav class="fixed top-8 w-full z-50 glass-panel">
+        <div class="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
+            <a href="#home" class="flex items-center gap-3 group cursor-pointer transition-opacity hover:opacity-80">
+                <!-- Brand Logo -->
+                <img src="https://i.ibb.co/rfs2sDK5/Whats-App-Image-2026-02-12-at-11-40-19-PM-removebg-preview.png" alt="1Eye Media" class="h-20 w-auto object-contain">
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center gap-10 text-sm font-light text-textsecondary tracking-widest uppercase">
+                <a href="#home" class="nav-link hover:text-white transition-colors">Home</a>
+                <a href="#vision" class="nav-link hover:text-white transition-colors">Vision</a>
+                <a href="#products" class="nav-link hover:text-white transition-colors">Products</a>
+                <a href="#contact" class="nav-link hover:text-white transition-colors">Contact</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden absolute w-full bg-void border-b border-white/10 p-6 flex flex-col gap-4 text-center">
+            <a href="#home" class="text-textsecondary hover:text-accent">Home</a>
+            <a href="#vision" class="text-textsecondary hover:text-accent">Vision</a>
+            <a href="#products" class="text-textsecondary hover:text-accent">Products</a>
+            <a href="#contact" class="text-textsecondary hover:text-accent">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden pt-40">
+        <!-- 3D Grid Floor -->
+        <div class="perspective-grid"></div>
+
+        <div class="relative z-10 text-center px-6 max-w-5xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-8 reveal">
+                <div class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
+                <span class="text-xs tracking-[0.2em] text-accent uppercase font-medium">System Online</span>
+            </div>
+            
+            <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6 reveal transition-all delay-100">
+                ENGINEERING <br />
+                <span class="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">STRUCTURED</span> <br />
+                INFRASTRUCTURE
+            </h1>
+            
+            <p class="text-textsecondary text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light leading-relaxed reveal transition-all delay-200">
+                1Eye Media builds controlled, scalable digital ecosystems for modern institutions. We provide the clarity of an orbital perspective.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 reveal transition-all delay-300">
+                <a href="#vision" class="btn-primary px-8 py-4 bg-accent text-void font-bold tracking-wider uppercase text-sm hover:bg-white transition-colors min-w-[180px]">
+                    Explore Vision
+                </a>
+                <a href="#products" class="px-8 py-4 border border-white/20 text-white font-medium tracking-wider uppercase text-sm hover:border-accent hover:text-accent transition-colors min-w-[180px]">
+                    View Products
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vision Section -->
+    <section id="vision" class="py-32 relative z-10">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="reveal">
+                    <h2 class="font-display text-4xl md:text-5xl font-bold mb-8">THE VOID REQUIRES <br/><span class="text-accent">STRUCTURE</span></h2>
+                    <div class="w-20 h-[1px] bg-accent mb-8"></div>
+                    <p class="text-textsecondary text-lg leading-relaxed mb-6">
+                        In an expanding digital universe, chaos is the default state. Entropy erodes systems that lack rigorous architecture.
+                    </p>
+                    <p class="text-textsecondary text-lg leading-relaxed">
+                        At 1Eye Media, we don't just build software; we engineer observatories. Our platforms act as central nervous systems, providing high-level visibility and granular control over complex data streams. We bring the discipline of aerospace engineering to digital infrastructure.
+                    </p>
+                </div>
+                
+                <!-- Abstract Visual -->
+                <div class="relative h-[400px] w-full border border-white/10 bg-white/[0.02] flex items-center justify-center reveal transition-all delay-200">
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-30"></div>
+                    <!-- Central Ring Animation -->
+                    <div class="relative w-64 h-64">
+                        <div class="absolute inset-0 border border-accent/20 rounded-full animate-spin-slow"></div>
+                        <div class="absolute inset-4 border border-white/10 rounded-full animate-spin-slow" style="animation-direction: reverse;"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-2 h-2 bg-accent rounded-full shadow-[0_0_20px_#00bfff]"></div>
+                        </div>
+                        <!-- Orbiting particles -->
+                        <div class="absolute top-1/2 left-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-accent/20 to-transparent -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
+                        <div class="absolute top-1/2 left-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-accent/20 to-transparent -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="py-32 relative z-10 bg-black/20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-8 reveal">
+                <div>
+                    <span class="text-accent tracking-widest text-xs uppercase font-bold mb-2 block">Our Systems</span>
+                    <h2 class="font-display text-4xl font-bold">DEPLOYED MODULES</h2>
+                </div>
+                <p class="text-textsecondary text-sm mt-4 md:mt-0 max-w-xs text-right">
+                    Scalable solutions for enterprise and institutional control.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Product 1 -->
+                <div class="group card-hover p-8 bg-surface rounded-sm relative overflow-hidden reveal transition-all delay-100">
+                    <div class="absolute top-0 right-0 p-4 opacity-50">
+                        <i data-lucide="orbit" class="w-8 h-8 text-white/20 group-hover:text-accent transition-colors"></i>
+                    </div>
+                    <div class="inline-block px-2 py-1 bg-accent/10 text-accent text-[10px] tracking-widest uppercase font-bold mb-6 rounded-sm">
+                        In Development
+                    </div>
+                    <h3 class="font-display text-2xl font-bold mb-3 group-hover:text-accent transition-colors">1EduLoop</h3>
+                    <p class="text-textsecondary text-sm leading-relaxed mb-8">
+                        A centralized academic infrastructure loop. Designed to streamline administrative data flow and student tracking within a single, secure observatory interface.
+                    </p>
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">
+                        <span>Awaiting Launch</span>
+                        <div class="w-8 h-[1px] bg-current"></div>
+                    </div>
+                </div>
+
+                <!-- Product 2 (Placeholder for future) -->
+                <div class="group card-hover p-8 bg-surface rounded-sm relative overflow-hidden reveal transition-all delay-200">
+                    <div class="absolute top-0 right-0 p-4 opacity-50">
+                        <i data-lucide="shield-check" class="w-8 h-8 text-white/20 group-hover:text-accent transition-colors"></i>
+                    </div>
+                    <div class="inline-block px-2 py-1 bg-white/5 text-textsecondary text-[10px] tracking-widest uppercase font-bold mb-6 rounded-sm">
+                        Concept
+                    </div>
+                    <h3 class="font-display text-2xl font-bold mb-3 group-hover:text-accent transition-colors">CoreAuth</h3>
+                    <p class="text-textsecondary text-sm leading-relaxed mb-8">
+                        Identity verification protocol for distributed teams. Removes friction while maintaining absolute zero-trust security boundaries.
+                    </p>
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">
+                        <span>Restricted Access</span>
+                        <div class="w-8 h-[1px] bg-current"></div>
+                    </div>
+                </div>
+
+                <!-- Product 3 (Placeholder for future) -->
+                <div class="group card-hover p-8 bg-surface rounded-sm relative overflow-hidden reveal transition-all delay-300">
+                    <div class="absolute top-0 right-0 p-4 opacity-50">
+                        <i data-lucide="database" class="w-8 h-8 text-white/20 group-hover:text-accent transition-colors"></i>
+                    </div>
+                    <div class="inline-block px-2 py-1 bg-white/5 text-textsecondary text-[10px] tracking-widest uppercase font-bold mb-6 rounded-sm">
+                        Concept
+                    </div>
+                    <h3 class="font-display text-2xl font-bold mb-3 group-hover:text-accent transition-colors">DataSilo</h3>
+                    <p class="text-textsecondary text-sm leading-relaxed mb-8">
+                        Long-term cold storage architectural planning. Ensures data integrity across decades, not just fiscal years.
+                    </p>
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">
+                        <span>Restricted Access</span>
+                        <div class="w-8 h-[1px] bg-current"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founder / Credentials Section -->
+    <section class="py-24 relative z-10 border-t border-white/5 bg-gradient-to-b from-transparent to-white/[0.02]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col items-center justify-center text-center reveal">
+                <!-- Decorative Icon -->
+                <div class="relative w-16 h-16 mb-6 flex items-center justify-center">
+                    <div class="absolute inset-0 border border-accent/30 rounded-full animate-pulse-slow"></div>
+                    <div class="absolute inset-2 border border-white/10 rounded-full"></div>
+                    <i data-lucide="fingerprint" class="w-6 h-6 text-accent relative z-10"></i>
+                </div>
+
+                <!-- Credential Tag -->
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-accent/20 bg-accent/5 mb-6 backdrop-blur-md">
+                    <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
+                    <span class="text-[10px] tracking-[0.2em] text-accent uppercase font-bold">System Architect</span>
+                </div>
+                
+                <!-- Name & Title -->
+                <h2 class="font-display text-4xl md:text-5xl font-bold mb-3 text-white glitch" data-text="RAHUL SINGH">RAHUL SINGH</h2>
+                <div class="flex items-center gap-4 text-textsecondary text-sm tracking-[0.3em] uppercase mb-8 font-medium">
+                    <span class="text-accent/50">//</span>
+                    <span>Founder</span>
+                    <span class="w-1 h-1 bg-white/20 rounded-full"></span>
+                    <span>1Eye Media Network</span>
+                    <span class="text-accent/50">//</span>
+                </div>
+                
+                <!-- Signature Line -->
+                <div class="w-32 h-[1px] bg-gradient-to-r from-transparent via-accent/50 to-transparent"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-32 relative z-10">
+        <div class="max-w-xl mx-auto px-6">
+            <div class="text-center mb-12 reveal">
+                <i data-lucide="radio" class="w-8 h-8 text-accent mx-auto mb-6"></i>
+                <h2 class="font-display text-4xl font-bold mb-4">INITIATE UPLINK</h2>
+                <p class="text-textsecondary">Establish a connection with our engineering team.</p>
+            </div>
+
+            <form class="space-y-6 reveal transition-all delay-100" onsubmit="event.preventDefault();">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-xs uppercase tracking-widest text-textsecondary font-bold">Designation</label>
+                        <input type="text" placeholder="Name" class="w-full bg-[#0e0e14] border border-white/10 p-4 text-white focus:outline-none focus:border-accent focus:shadow-[0_0_15px_rgba(0,191,255,0.1)] transition-all">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs uppercase tracking-widest text-textsecondary font-bold">Frequency</label>
+                        <input type="email" placeholder="Email Address" class="w-full bg-[#0e0e14] border border-white/10 p-4 text-white focus:outline-none focus:border-accent focus:shadow-[0_0_15px_rgba(0,191,255,0.1)] transition-all">
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs uppercase tracking-widest text-textsecondary font-bold">Transmission</label>
+                    <textarea rows="4" placeholder="Message content..." class="w-full bg-[#0e0e14] border border-white/10 p-4 text-white focus:outline-none focus:border-accent focus:shadow-[0_0_15px_rgba(0,191,255,0.1)] transition-all"></textarea>
+                </div>
+                <button class="w-full py-4 bg-white/5 border border-white/10 text-white font-display font-bold tracking-widest uppercase hover:bg-accent hover:text-void hover:border-accent transition-all duration-300">
+                    Send Transmission
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 py-12 relative z-10 bg-black/40">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                 <!-- Brand Logo -->
+                 <img src="https://i.ibb.co/rfs2sDK5/Whats-App-Image-2026-02-12-at-11-40-19-PM-removebg-preview.png" alt="1Eye Media" class="h-16 w-auto object-contain">
+            </div>
+            <div class="text-textsecondary text-xs tracking-widest">
+                &copy; 2026 1EYE MEDIA NETWORK. ALL SYSTEMS NOMINAL.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Star Generation
+        document.addEventListener('DOMContentLoaded', () => {
+            const starContainer = document.getElementById('star-container');
+            const shootingStarContainer = document.getElementById('shooting-star-container');
+            const starCount = 80; // Minimal count for cleaner look
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Random positioning
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const size = Math.random() * 2 + 1; // 1px to 3px
+                const duration = Math.random() * 3 + 2; // 2s to 5s
+                const delay = Math.random() * 5;
+                const opacity = Math.random() * 0.5 + 0.3;
+
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.setProperty('--duration', `${duration}s`);
+                star.style.setProperty('--delay', `${delay}s`);
+                star.style.setProperty('--opacity', opacity);
+
+                starContainer.appendChild(star);
+            }
+
+            // Shooting Stars Logic
+            function spawnShootingStar() {
+                const star = document.createElement('div');
+                star.classList.add('shooting-star');
+                
+                // Random position: Favor top-right area to fall across screen
+                const startX = Math.random() * (window.innerWidth + 200);
+                const startY = Math.random() * (window.innerHeight * 0.4); // Start in top 40%
+                
+                star.style.left = `${startX}px`;
+                star.style.top = `${startY}px`;
+                
+                // Randomize animation duration (speed)
+                const duration = 1.5 + Math.random() * 2; 
+                star.style.animation = `shoot ${duration}s linear forwards`;
+
+                shootingStarContainer.appendChild(star);
+
+                // Cleanup DOM after animation
+                setTimeout(() => {
+                    star.remove();
+                }, duration * 1000 + 100);
+            }
+
+            // Interval for shooting stars
+            setInterval(() => {
+                // Spawn a star roughly every 2-4 seconds if tab is active
+                if (!document.hidden && Math.random() > 0.4) {
+                    spawnShootingStar();
+                }
+            }, 2500);
+
+            // Scroll Reveal Observer
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: "0px"
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>
