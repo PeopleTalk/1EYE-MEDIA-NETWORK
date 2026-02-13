@@ -84,6 +84,57 @@
             100% { opacity: 0; transform: scale(0.5); }
         }
 
+        /* Success Transmission Animation */
+        .transmission-beam {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100vh;
+            background: linear-gradient(to top, transparent, #00bfff, #ffffff);
+            opacity: 0;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .transmission-particle {
+            position: fixed;
+            width: 100px; /* Length of the "rocket" streak */
+            height: 4px;
+            background: linear-gradient(to right, transparent, #ffffff, #00bfff);
+            border-radius: 4px;
+            filter: drop-shadow(0 0 10px #00bfff);
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes super-speed-launch {
+            0% {
+                transform: translate(-50%, 0) rotate(-90deg) scaleX(0.2);
+                opacity: 1;
+                bottom: 20%;
+                left: 50%;
+            }
+            40% {
+                opacity: 1;
+                transform: translate(-50%, 0) rotate(-90deg) scaleX(1);
+            }
+            100% {
+                transform: translate(-50%, -200vh) rotate(-90deg) scaleX(2);
+                opacity: 0;
+                bottom: 20%;
+                left: 50%;
+            }
+        }
+
+        @keyframes beam-flash {
+            0% { opacity: 0; height: 0; bottom: 0; }
+            50% { opacity: 1; height: 100vh; bottom: 0; }
+            100% { opacity: 0; height: 100vh; bottom: 100vh; }
+        }
+
         /* Shooting Star Animation */
         .shooting-star {
             position: absolute;
@@ -333,6 +384,9 @@
     <!-- Background Elements -->
     <div id="star-container" class="fixed inset-0 z-0 pointer-events-none"></div>
     <div id="shooting-star-container" class="fixed inset-0 z-0 pointer-events-none overflow-hidden"></div>
+    <!-- Transmission Animation Container -->
+    <div id="transmission-fx" class="fixed inset-0 pointer-events-none z-[100]"></div>
+
     <div class="fixed top-[-20%] left-[-10%] ambient-glow opacity-40"></div>
     <div class="fixed bottom-[-20%] right-[-10%] ambient-glow opacity-30"></div>
 
@@ -764,6 +818,7 @@
             const form = document.getElementById('contact-form');
             const btn = document.getElementById('form-submit-btn');
             const status = document.getElementById('form-status');
+            const fxContainer = document.getElementById('transmission-fx');
             
             const originalText = btn.innerText;
             btn.innerText = "TRANSMITTING...";
@@ -786,7 +841,30 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    status.innerText = "TRANSMISSION SUCCESSFUL. STANDING BY.";
+                    // === SUCCESS ANIMATION START ===
+                    
+                    // Create Rocket/Star Element
+                    const rocket = document.createElement('div');
+                    rocket.className = 'transmission-particle';
+                    rocket.style.animation = 'super-speed-launch 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+                    
+                    // Create Beam Flash
+                    const beam = document.createElement('div');
+                    beam.className = 'transmission-beam';
+                    beam.style.animation = 'beam-flash 0.6s ease-out forwards';
+
+                    fxContainer.appendChild(rocket);
+                    fxContainer.appendChild(beam);
+
+                    // Clean up animation elements
+                    setTimeout(() => {
+                        rocket.remove();
+                        beam.remove();
+                    }, 1000);
+
+                    // === ANIMATION END ===
+
+                    status.innerText = "UPLINK ESTABLISHED. DATA SENT.";
                     status.classList.remove('hidden', 'text-red-500');
                     status.classList.add('text-accent');
                     form.reset();
@@ -876,12 +954,12 @@
                 
                 PROTOCOL FOR CONTACTING DEVELOPER:
                 If the Operator wants to send a message to the developer/Rahul:
-                1. You MUST collect 3 pieces of info: Name, Email, and Message.
+                1. You MUST collect 2 pieces of info: Name and Message. (DO NOT ASK FOR EMAIL).
                 2. If missing any info, ask for it specifically.
-                3. Once you have ALL THREE, output EXACTLY this JSON format as your ONLY response:
-                   ::INITIATE_TRANSMISSION:: {"name": "User Name", "email": "user@email.com", "message": "The message content"}
+                3. Once you have BOTH, output EXACTLY this JSON format as your ONLY response:
+                   ::INITIATE_TRANSMISSION:: {"name": "User Name", "message": "The message content"}
                 
-                DO NOT output the JSON until you have all 3 fields. 
+                DO NOT output the JSON until you have both fields. 
                 DO NOT include markdown or other text with the JSON trigger.
                 
                 General Queries: Answer normally based on company info (Rahul Singh, 1Eye Media Network).`;
@@ -908,7 +986,7 @@
                         const data = JSON.parse(jsonStr);
                         
                         // Send to Web3Forms
-                        addMessage("Compiling packet for secure transmission...", 'ai');
+                        addMessage("Bypassing email protocol... Compiling packet...", 'ai');
                         
                         await fetch("https://api.web3forms.com/submit", {
                             method: "POST",
@@ -916,9 +994,9 @@
                             body: JSON.stringify({
                                 access_key: web3FormKey,
                                 name: data.name,
-                                email: data.email,
+                                email: "uplink@1eye.network", // Auto-filled placeholder email
                                 message: data.message,
-                                subject: "AI Chatbot Uplink Request"
+                                subject: "AI Chatbot Uplink (Direct)"
                             })
                         });
 
