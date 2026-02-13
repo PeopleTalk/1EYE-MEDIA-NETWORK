@@ -646,7 +646,7 @@
 
         // Chatbot Logic
         let isChatOpen = false;
-        const apiKey = ""; // API Key injected by environment
+        const apiKey = "AIzaSyB2UzyD34_cdl5JJJ9yG5nlgyj1xr8TULI"; // API Key injected
 
         function toggleChat() {
             const chatWindow = document.getElementById('chat-window');
@@ -704,7 +704,7 @@
             // Prepare AI Request
             try {
                 // Exponential backoff retry logic for API calls
-                async function fetchWithRetry(url, options, maxRetries = 5) {
+                async function fetchWithRetry(url, options, maxRetries = 3) {
                     for (let i = 0; i < maxRetries; i++) {
                         try {
                             const response = await fetch(url, options);
@@ -719,7 +719,8 @@
                             return await response.json();
                         } catch (err) {
                             if (i === maxRetries - 1) throw err;
-                            await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                            // Faster retries: 500ms base instead of 1000ms
+                            await new Promise(r => setTimeout(r, Math.pow(2, i) * 500));
                         }
                     }
                 }
