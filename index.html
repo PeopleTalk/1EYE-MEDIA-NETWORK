@@ -676,6 +676,31 @@
             // Add Loading Indicator
             const loadingId = addLoadingIndicator();
 
+            // === VERCEL/DEPLOYMENT FIX: Dynamic Key Handling ===
+            let currentKey = apiKey;
+            
+            // 1. Try to get key from Local Storage (if user entered it before)
+            if (!currentKey) {
+                currentKey = localStorage.getItem('gemini_api_key');
+            }
+
+            // 2. If still no key, check if user is trying to input one now
+            if (!currentKey) {
+                // Check if message looks like an API key (starts with AIza)
+                if (message.startsWith('AIza')) {
+                    localStorage.setItem('gemini_api_key', message);
+                    removeMessage(loadingId);
+                    addMessage("Secure Uplink Established. API Key saved to local storage. You may now proceed with commands.", 'ai');
+                    return;
+                } else {
+                    // Ask user for key
+                    removeMessage(loadingId);
+                    addMessage("⚠️ **System Alert: Deployment Mode Detected**\n\nTo enable 1Ai on this external terminal (Vercel/Netlify), a valid Google Gemini API Key is required.\n\nPlease paste your API Key below (starts with 'AIza...').\n\n*Input will be saved locally for future sessions.*", 'ai');
+                    return;
+                }
+            }
+            // ===================================================
+
             // Prepare AI Request
             try {
                 // Exponential backoff retry logic for API calls
@@ -683,7 +708,14 @@
                     for (let i = 0; i < maxRetries; i++) {
                         try {
                             const response = await fetch(url, options);
-                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                            if (!response.ok) {
+                                // If 400/403, key is likely invalid. Clear it so user can try again.
+                                if (response.status === 400 || response.status === 403) {
+                                    localStorage.removeItem('gemini_api_key');
+                                    throw new Error("Invalid API Key");
+                                }
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
                             return await response.json();
                         } catch (err) {
                             if (i === maxRetries - 1) throw err;
@@ -709,7 +741,7 @@
                 Respond to the user's input with this persona. Keep responses short and impact-focused.`;
 
                 const responseData = await fetchWithRetry(
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${currentKey}`,
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -729,7 +761,11 @@
             } catch (error) {
                 console.error(error);
                 removeMessage(loadingId);
-                addMessage("Connection instability detected. Unable to process query.", 'ai');
+                if (error.message === "Invalid API Key") {
+                    addMessage("Connection Refused: API Key appears invalid or expired. Local credential cleared. Please re-enter your API Key.", 'ai');
+                } else {
+                    addMessage("Connection instability detected. Unable to process query.", 'ai');
+                }
             }
         }
 
@@ -746,10 +782,13 @@
                 ? 'bg-white/5 border border-white/5 text-gray-200'
                 : 'bg-accent/20 border border-accent/20 text-white';
 
+            // Support basic markdown-like bolding for system messages
+            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+
             div.innerHTML = `
                 ${iconHtml}
                 <div class="${bubbleClass} p-3 rounded-lg ${sender === 'ai' ? 'rounded-tl-none' : 'rounded-tr-none'} text-sm leading-relaxed max-w-[85%]">
-                    <p>${text}</p>
+                    <p>${formattedText}</p>
                 </div>
             `;
             
