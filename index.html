@@ -357,7 +357,8 @@
 <body class="font-body selection:bg-accent selection:text-void antialiased">
 
     <!-- Top Marquee Banner -->
-    <div class="fixed top-0 left-0 w-full h-8 bg-accent/5 border-b border-accent/20 z-[60] flex items-center overflow-hidden backdrop-blur-sm">
+    <!-- Increased Z-Index to 110 -->
+    <div class="fixed top-0 left-0 w-full h-8 bg-accent/5 border-b border-accent/20 z-[110] flex items-center overflow-hidden backdrop-blur-sm">
         <div class="animate-marquee whitespace-nowrap">
             <!-- Repeated text for seamless loop -->
             <span class="text-[10px] font-bold tracking-[0.2em] text-accent uppercase mx-4">
@@ -384,14 +385,17 @@
     <!-- Background Elements -->
     <div id="star-container" class="fixed inset-0 z-0 pointer-events-none"></div>
     <div id="shooting-star-container" class="fixed inset-0 z-0 pointer-events-none overflow-hidden"></div>
+    
     <!-- Transmission Animation Container -->
-    <div id="transmission-fx" class="fixed inset-0 pointer-events-none z-[100]"></div>
+    <!-- HIDDEN by default to prevent overlay issues, activated by JS -->
+    <div id="transmission-fx" class="fixed inset-0 pointer-events-none z-[200] hidden"></div>
 
     <div class="fixed top-[-20%] left-[-10%] ambient-glow opacity-40"></div>
     <div class="fixed bottom-[-20%] right-[-10%] ambient-glow opacity-30"></div>
 
     <!-- Navigation (Moved down to accommodate banner) -->
-    <nav class="fixed top-8 w-full z-50 glass-panel">
+    <!-- Increased Z-Index to 100 -->
+    <nav class="fixed top-8 w-full z-[100] glass-panel">
         <div class="max-w-7xl mx-auto px-4 md:px-6 h-20 md:h-24 flex items-center justify-between">
             <a href="#home" class="flex items-center gap-3 group cursor-pointer transition-opacity hover:opacity-80">
                 <!-- Brand Logo - Smaller on Mobile -->
@@ -428,13 +432,14 @@
             </div>
 
             <!-- Mobile Menu Button -->
-            <button class="md:hidden text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+            <!-- Explicit Z-Index -->
+            <button class="md:hidden text-white relative z-[101]" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
                 <i data-lucide="menu" class="w-6 h-6"></i>
             </button>
         </div>
 
         <!-- Mobile Menu Dropdown -->
-        <div id="mobile-menu" class="hidden md:hidden absolute w-full bg-void border-b border-white/10 p-6 flex flex-col gap-4 text-center z-50">
+        <div id="mobile-menu" class="hidden md:hidden absolute w-full bg-void border-b border-white/10 p-6 flex flex-col gap-4 text-center z-[99]">
             <a href="#home" class="text-textsecondary hover:text-accent">Home</a>
             <a href="#vision" class="text-textsecondary hover:text-accent">Vision</a>
             <a href="#products" class="text-textsecondary hover:text-accent">Products</a>
@@ -459,7 +464,8 @@
         <!-- 3D Grid Floor -->
         <div class="perspective-grid"></div>
 
-        <div class="relative z-10 text-center px-4 md:px-6 max-w-[90rem] mx-auto w-full">
+        <!-- Increased content Z-index to 30 -->
+        <div class="relative z-30 text-center px-4 md:px-6 max-w-[90rem] mx-auto w-full">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-6 md:mb-8 reveal">
                 <div class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
                 <span class="text-xs tracking-[0.2em] text-accent uppercase font-medium">System Online</span>
@@ -478,10 +484,10 @@
             </p>
             
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 reveal transition-all delay-300 w-full px-4">
-                <a href="#vision" class="btn-primary w-full sm:w-auto px-10 py-5 bg-accent text-void font-bold tracking-wider uppercase text-sm hover:bg-white transition-colors min-w-[200px] text-center">
+                <a href="#vision" class="btn-primary w-full sm:w-auto px-10 py-5 bg-accent text-void font-bold tracking-wider uppercase text-sm hover:bg-white transition-colors min-w-[200px] text-center cursor-pointer relative z-40">
                     Explore Vision
                 </a>
-                <a href="#products" class="w-full sm:w-auto px-10 py-5 border border-white/20 text-white font-medium tracking-wider uppercase text-sm hover:border-accent hover:text-accent transition-colors min-w-[200px] text-center">
+                <a href="#products" class="w-full sm:w-auto px-10 py-5 border border-white/20 text-white font-medium tracking-wider uppercase text-sm hover:border-accent hover:text-accent transition-colors min-w-[200px] text-center cursor-pointer relative z-40">
                     View Products
                 </a>
             </div>
@@ -688,7 +694,8 @@
     </footer>
 
     <!-- 1Ai Chatbot Interface -->
-    <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4">
+    <!-- Increased Z-Index to 120 -->
+    <div class="fixed bottom-6 right-6 z-[120] flex flex-col items-end gap-4">
         
         <!-- Chat Window -->
         <div id="chat-window" class="chat-window w-[90vw] md:w-[400px] h-[500px] bg-[#0e0e14]/95 backdrop-blur-xl border border-accent/20 rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-0 opacity-0 pointer-events-none origin-bottom-right">
@@ -854,6 +861,9 @@
                 if (result.success) {
                     // === SUCCESS ANIMATION START ===
                     
+                    // Show container
+                    fxContainer.classList.remove('hidden');
+
                     // Create Rocket/Star Element
                     const rocket = document.createElement('div');
                     rocket.className = 'transmission-particle';
@@ -871,6 +881,7 @@
                     setTimeout(() => {
                         rocket.remove();
                         beam.remove();
+                        fxContainer.classList.add('hidden');
                     }, 1000);
 
                     // === ANIMATION END ===
