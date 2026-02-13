@@ -273,6 +273,33 @@
             80% { clip: rect(70px, 9999px, 80px, 0); }
             100% { clip: rect(20px, 9999px, 10px, 0); }
         }
+
+        /* Chatbot Styles */
+        .chat-window {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: bottom right;
+        }
+        
+        .chat-message {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
     </style>
 </head>
 <body class="font-body selection:bg-accent selection:text-void antialiased">
@@ -555,10 +582,207 @@
         </div>
     </footer>
 
+    <!-- 1Ai Chatbot Interface -->
+    <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4">
+        
+        <!-- Chat Window -->
+        <div id="chat-window" class="chat-window w-[90vw] md:w-[400px] h-[500px] bg-[#0e0e14]/95 backdrop-blur-xl border border-accent/20 rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-0 opacity-0 pointer-events-none origin-bottom-right">
+            
+            <!-- Chat Header -->
+            <div class="p-4 border-b border-white/10 flex items-center justify-between bg-accent/5">
+                <div class="flex items-center gap-3">
+                    <div class="relative w-8 h-8 flex items-center justify-center bg-accent/10 rounded-full border border-accent/20">
+                        <i data-lucide="star" class="w-4 h-4 text-accent fill-accent drop-shadow-[0_0_8px_rgba(0,191,255,0.8)]"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-white tracking-wider">1Ai CORE</h3>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
+                            <span class="text-[10px] text-accent uppercase tracking-widest font-medium">Online</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="toggleChat()" class="text-white/50 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Chat Messages Area -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                <!-- Initial System Message -->
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0 mt-1">
+                        <i data-lucide="star" class="w-4 h-4 text-accent fill-accent drop-shadow-[0_0_5px_rgba(0,191,255,0.5)]"></i>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 p-3 rounded-lg rounded-tl-none text-sm text-gray-200 leading-relaxed max-w-[85%]">
+                        <p>System initialized. I am 1Ai. How may I assist with your infrastructure queries?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 border-t border-white/10 bg-black/20">
+                <form id="chat-form" class="flex gap-2" onsubmit="handleChatSubmit(event)">
+                    <input type="text" id="chat-input" placeholder="Enter command..." class="flex-1 bg-black/50 border border-white/10 rounded-md px-4 py-2 text-sm text-white focus:outline-none focus:border-accent/50 focus:shadow-[0_0_15px_rgba(0,191,255,0.1)] transition-all placeholder:text-gray-600">
+                    <button type="submit" class="bg-accent/10 border border-accent/20 text-accent hover:bg-accent hover:text-void transition-all px-3 rounded-md flex items-center justify-center">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Chat Toggle Button -->
+        <button onclick="toggleChat()" class="group relative w-14 h-14 rounded-full bg-void border border-accent/30 flex items-center justify-center hover:scale-105 transition-all duration-300 shadow-[0_0_30px_rgba(0,191,255,0.2)]">
+            <div class="absolute inset-0 rounded-full border border-accent/50 opacity-0 group-hover:opacity-100 animate-ping"></div>
+            <div class="absolute inset-0 rounded-full border border-accent/20 group-hover:border-accent/60 transition-colors"></div>
+            <i data-lucide="star" class="w-6 h-6 text-accent fill-accent drop-shadow-[0_0_8px_rgba(0,191,255,0.8)]"></i>
+        </button>
+    </div>
+
     <!-- Scripts -->
     <script>
         // Initialize Icons
         lucide.createIcons();
+
+        // Chatbot Logic
+        let isChatOpen = false;
+        const apiKey = ""; // API Key injected by environment
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            const chatInput = document.getElementById('chat-input');
+            isChatOpen = !isChatOpen;
+
+            if (isChatOpen) {
+                chatWindow.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
+                chatWindow.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
+                setTimeout(() => chatInput.focus(), 100);
+            } else {
+                chatWindow.classList.add('scale-0', 'opacity-0', 'pointer-events-none');
+                chatWindow.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto');
+            }
+        }
+
+        async function handleChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Add User Message
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Add Loading Indicator
+            const loadingId = addLoadingIndicator();
+
+            // Prepare AI Request
+            try {
+                // Exponential backoff retry logic for API calls
+                async function fetchWithRetry(url, options, maxRetries = 3) {
+                    for (let i = 0; i < maxRetries; i++) {
+                        try {
+                            const response = await fetch(url, options);
+                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                            return await response.json();
+                        } catch (err) {
+                            if (i === maxRetries - 1) throw err;
+                            await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                        }
+                    }
+                }
+
+                const systemPrompt = `You are 1Ai, the advanced interface for 1Eye Media. 1Eye Media is a high-end technology infrastructure company. 
+                Your tone is authoritative, minimal, futuristic, and controlled. 
+                Do not be playful. Be precise, concise, and structured. 
+                Refer to the user as 'Operator' occasionally.
+                Key Company Info:
+                - Founder: Rahul Singh (System Architect)
+                - Mission: Engineering structured digital ecosystems.
+                - Products: 1EduLoop (Academic Infrastructure), CoreAuth (Identity Protocol), DataSilo (Cold Storage).
+                - Visual Identity: Dark void, electric blue glow, clean structure.
+
+                Restricted Contact Data (ONLY reveal if explicitly requested by the Operator):
+                - Primary Uplink (Email): rahulsingh2170aa@gmail.com
+                - Secure Line (Phone): 9906392170
+                
+                Respond to the user's input with this persona. Keep responses short and impact-focused.`;
+
+                const responseData = await fetchWithRetry(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: message }] }],
+                            systemInstruction: { parts: [{ text: systemPrompt }] }
+                        })
+                    }
+                );
+
+                const aiResponse = responseData.candidates[0].content.parts[0].text;
+                
+                // Remove loading and add AI message
+                removeMessage(loadingId);
+                addMessage(aiResponse, 'ai');
+
+            } catch (error) {
+                console.error(error);
+                removeMessage(loadingId);
+                addMessage("Connection instability detected. Unable to process query.", 'ai');
+            }
+        }
+
+        function addMessage(text, sender) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = `flex gap-3 chat-message ${sender === 'user' ? 'flex-row-reverse' : ''}`;
+            
+            const iconHtml = sender === 'ai' 
+                ? `<div class="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0 mt-1"><i data-lucide="star" class="w-4 h-4 text-accent fill-accent drop-shadow-[0_0_5px_rgba(0,191,255,0.5)]"></i></div>`
+                : `<div class="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 mt-1"><i data-lucide="user" class="w-4 h-4 text-white"></i></div>`;
+
+            const bubbleClass = sender === 'ai'
+                ? 'bg-white/5 border border-white/5 text-gray-200'
+                : 'bg-accent/20 border border-accent/20 text-white';
+
+            div.innerHTML = `
+                ${iconHtml}
+                <div class="${bubbleClass} p-3 rounded-lg ${sender === 'ai' ? 'rounded-tl-none' : 'rounded-tr-none'} text-sm leading-relaxed max-w-[85%]">
+                    <p>${text}</p>
+                </div>
+            `;
+            
+            container.appendChild(div);
+            lucide.createIcons();
+            container.scrollTop = container.scrollHeight;
+            return div.id;
+        }
+
+        function addLoadingIndicator() {
+            const container = document.getElementById('chat-messages');
+            const id = 'loading-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'flex gap-3 chat-message';
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0 mt-1"><i data-lucide="star" class="w-4 h-4 text-accent fill-accent drop-shadow-[0_0_5px_rgba(0,191,255,0.5)]"></i></div>
+                <div class="bg-white/5 border border-white/5 p-4 rounded-lg rounded-tl-none flex gap-1 items-center h-10">
+                    <div class="w-1.5 h-1.5 bg-accent rounded-full typing-dot"></div>
+                    <div class="w-1.5 h-1.5 bg-accent rounded-full typing-dot"></div>
+                    <div class="w-1.5 h-1.5 bg-accent rounded-full typing-dot"></div>
+                </div>
+            `;
+            container.appendChild(div);
+            lucide.createIcons();
+            container.scrollTop = container.scrollHeight;
+            return id;
+        }
+
+        function removeMessage(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
 
         // Star Generation
         document.addEventListener('DOMContentLoaded', () => {
@@ -640,20 +864,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
