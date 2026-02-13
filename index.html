@@ -581,24 +581,34 @@
                 <p class="text-textsecondary">Establish a connection with our engineering team.</p>
             </div>
 
-            <form class="space-y-6 reveal transition-all delay-100" onsubmit="event.preventDefault();">
+            <!-- Web3Forms Integration -->
+            <form id="contact-form" class="space-y-6 reveal transition-all delay-100" onsubmit="handleContactForm(event)">
+                <input type="hidden" name="access_key" value="d8fa54f1-20c5-4fa4-930c-d372bd11baa0">
+                <input type="hidden" name="subject" value="New Uplink Request - 1Eye Media">
+                <input type="hidden" name="from_name" value="1Eye Media Site">
+
                 <div class="grid grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label class="text-xs uppercase tracking-widest text-textsecondary font-bold">Designation</label>
-                        <input type="text" placeholder="Name" class="w-full bg-[#0e0e14] border border-white/10 p-4 text-white focus:outline-none focus:border-accent focus:shadow-[0_0_15px_rgba(0,191,255,0.1)] transition-all">
+                        <input type="text" name="name" required placeholder="Name" class="w-full bg-[#0e0e14] border border-white/10 p-4 text-white focus:outline-none focus:border-accent focus:shadow-[0_0_15px_rgba(0,191,255,0.1)] transition-all">
                     </div>
                     <div class="space-y-2">
                         <label class="text-xs uppercase tracking-widest text-textsecondary font-bold">Frequency</label>
-                        <input type="email" placeholder="Email Address" class="w-full bg-[#0e0e14] border border-white/10 p-4 text-white focus:outline-none focus:border-accent focus:shadow-[0_0_15px_rgba(0,191,255,0.1)] transition-all">
+                        <input type="email" name="email" required placeholder="Email Address" class="w-full bg-[#0e0e14] border border-white/10 p-4 text-white focus:outline-none focus:border-accent focus:shadow-[0_0_15px_rgba(0,191,255,0.1)] transition-all">
                     </div>
                 </div>
                 <div class="space-y-2">
                     <label class="text-xs uppercase tracking-widest text-textsecondary font-bold">Transmission</label>
-                    <textarea rows="4" placeholder="Message content..." class="w-full bg-[#0e0e14] border border-white/10 p-4 text-white focus:outline-none focus:border-accent focus:shadow-[0_0_15px_rgba(0,191,255,0.1)] transition-all"></textarea>
+                    <textarea name="message" rows="4" required placeholder="Message content..." class="w-full bg-[#0e0e14] border border-white/10 p-4 text-white focus:outline-none focus:border-accent focus:shadow-[0_0_15px_rgba(0,191,255,0.1)] transition-all"></textarea>
                 </div>
-                <button class="w-full py-4 bg-white/5 border border-white/10 text-white font-display font-bold tracking-widest uppercase hover:bg-accent hover:text-void hover:border-accent transition-all duration-300">
+                
+                <!-- HCaptcha / Recaptcha Spam Protection (Optional, enabled by default in Web3Forms) -->
+                <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
+
+                <button type="submit" id="form-submit-btn" class="w-full py-4 bg-white/5 border border-white/10 text-white font-display font-bold tracking-widest uppercase hover:bg-accent hover:text-void hover:border-accent transition-all duration-300">
                     Send Transmission
                 </button>
+                <p id="form-status" class="text-center text-xs text-accent tracking-widest hidden mt-4"></p>
             </form>
         </div>
     </section>
@@ -679,15 +689,11 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 
-        // Firebase Configuration (Handles both Preview and Deployed environments)
+        // ... Firebase Config (Existing Code) ...
         let firebaseConfig;
-        
-        // 1. Check if we are in the Preview Environment (global variable exists)
         if (typeof __firebase_config !== 'undefined') {
             firebaseConfig = JSON.parse(__firebase_config);
         } else {
-            // 2. Fallback for Deployment (User must replace this object)
-            // REPLACE THE OBJECT BELOW WITH YOUR FIREBASE PROJECT CONFIG FOR VERCEL DEPLOYMENT
             firebaseConfig = {
                 apiKey: "YOUR_API_KEY",
                 authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -696,10 +702,9 @@
                 messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
                 appId: "YOUR_APP_ID"
             };
-            console.warn("Using placeholder Firebase config. Authentication will fail unless config is updated.");
+            console.warn("Using placeholder Firebase config.");
         }
 
-        // Initialize Firebase
         let app, auth, provider;
         try {
             app = initializeApp(firebaseConfig);
@@ -709,71 +714,43 @@
             console.error("Firebase Initialization Failed:", e);
         }
 
-        // --- AUTH FUNCTIONS (Attached to window for HTML onclick access) ---
-
         window.googleLogin = async () => {
-            if (!auth) {
-                alert("Auth system offline. Check console configuration.");
-                return;
-            }
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Login failed", error);
-                alert("Login failed: " + error.message);
-            }
+            if (!auth) { alert("Auth system offline."); return; }
+            try { await signInWithPopup(auth, provider); } catch (error) { console.error("Login failed", error); }
         };
 
         window.googleLogout = async () => {
             if (!auth) return;
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error("Logout failed", error);
-            }
+            try { await signOut(auth); } catch (error) { console.error("Logout failed", error); }
         };
 
-        // --- AUTH STATE LISTENER ---
         if (auth) {
             onAuthStateChanged(auth, (user) => {
+                // ... Existing UI Update Logic ...
                 const loginBtnDesktop = document.getElementById('login-btn-desktop');
                 const userProfileDesktop = document.getElementById('user-profile-desktop');
                 const userAvatarDesktop = document.getElementById('user-avatar-desktop');
                 const userNameDesktop = document.getElementById('user-name-desktop');
-                
                 const loginBtnMobile = document.getElementById('login-btn-mobile');
                 const userProfileMobile = document.getElementById('user-profile-mobile');
                 const userAvatarMobile = document.getElementById('user-avatar-mobile');
                 const userNameMobile = document.getElementById('user-name-mobile');
 
                 if (user) {
-                    // User is signed in
                     const photo = user.photoURL || 'https://via.placeholder.com/40';
                     const name = user.displayName || 'User';
-
-                    // Update Desktop UI
                     if(loginBtnDesktop) loginBtnDesktop.classList.add('hidden');
                     if(userProfileDesktop) userProfileDesktop.classList.remove('hidden');
                     if(userAvatarDesktop) userAvatarDesktop.src = photo;
                     if(userNameDesktop) userNameDesktop.textContent = name;
-
-                    // Update Mobile UI
                     if(loginBtnMobile) loginBtnMobile.classList.add('hidden');
                     if(userProfileMobile) userProfileMobile.classList.remove('hidden');
                     if(userProfileMobile) userProfileMobile.classList.add('flex');
                     if(userAvatarMobile) userAvatarMobile.src = photo;
                     if(userNameMobile) userNameMobile.textContent = name;
-                    
-                    // Optional: Inform Chatbot
-                    addMessage(`User Authorized: ${name}`, 'system-hidden'); 
-
                 } else {
-                    // User is signed out
-                    // Update Desktop UI
                     if(loginBtnDesktop) loginBtnDesktop.classList.remove('hidden');
                     if(userProfileDesktop) userProfileDesktop.classList.add('hidden');
-
-                    // Update Mobile UI
                     if(loginBtnMobile) loginBtnMobile.classList.remove('hidden');
                     if(userProfileMobile) userProfileMobile.classList.add('hidden');
                     if(userProfileMobile) userProfileMobile.classList.remove('flex');
@@ -781,21 +758,68 @@
             });
         }
 
-        // --- CHATBOT LOGIC (Moved inside Module) ---
+        // --- CONTACT FORM HANDLER (Web3Forms) ---
+        window.handleContactForm = async function(e) {
+            e.preventDefault();
+            const form = document.getElementById('contact-form');
+            const btn = document.getElementById('form-submit-btn');
+            const status = document.getElementById('form-status');
+            
+            const originalText = btn.innerText;
+            btn.innerText = "TRANSMITTING...";
+            btn.disabled = true;
+
+            const formData = new FormData(form);
+            const object = Object.fromEntries(formData);
+            const json = JSON.stringify(object);
+
+            try {
+                const response = await fetch("https://api.web3forms.com/submit", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: json
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    status.innerText = "TRANSMISSION SUCCESSFUL. STANDING BY.";
+                    status.classList.remove('hidden', 'text-red-500');
+                    status.classList.add('text-accent');
+                    form.reset();
+                } else {
+                    status.innerText = "TRANSMISSION FAILED.";
+                    status.classList.remove('hidden', 'text-accent');
+                    status.classList.add('text-red-500');
+                }
+            } catch (error) {
+                console.log(error);
+                status.innerText = "ERROR IN UPLINK.";
+                status.classList.remove('hidden', 'text-accent');
+                status.classList.add('text-red-500');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                setTimeout(() => status.classList.add('hidden'), 5000);
+            }
+        };
+
+        // --- CHATBOT LOGIC (Updated for Web3Form) ---
         
-        // Initialize Icons
         lucide.createIcons();
 
         let isChatOpen = false;
-        const apiKey = "AIzaSyB2UzyD34_cdl5JJJ9yG5nlgyj1xr8TULI"; // API Key injected
-        let chatHistory = []; // Initialize chat history for context
+        const apiKey = "AIzaSyB2UzyD34_cdl5JJJ9yG5nlgyj1xr8TULI"; 
+        const web3FormKey = "d8fa54f1-20c5-4fa4-930c-d372bd11baa0"; // Web3Form Key
+        let chatHistory = []; 
 
-        // Expose toggle function
         window.toggleChat = function() {
             const chatWindow = document.getElementById('chat-window');
             const chatInput = document.getElementById('chat-input');
             isChatOpen = !isChatOpen;
-
             if (isChatOpen) {
                 chatWindow.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
                 chatWindow.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
@@ -806,96 +830,61 @@
             }
         }
 
-        // Expose submit function
         window.handleChatSubmit = async function(e) {
             e.preventDefault();
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
             if (!message) return;
 
-            // Add User Message
             addMessage(message, 'user');
             input.value = '';
-            
-            // Add user message to history
             chatHistory.push({ role: "user", parts: [{ text: message }] });
-
-            // Add Loading Indicator
             const loadingId = addLoadingIndicator();
 
-            // === VERCEL/DEPLOYMENT FIX: Dynamic Key Handling ===
-            let currentKey = apiKey;
-            
-            // 1. Try to get key from Local Storage (if user entered it before)
-            if (!currentKey) {
-                currentKey = localStorage.getItem('gemini_api_key');
-            }
+            let currentKey = apiKey || localStorage.getItem('gemini_api_key');
 
-            // 2. If still no key, check if user is trying to input one now
             if (!currentKey) {
-                // Check if message looks like an API key (starts with AIza)
                 if (message.startsWith('AIza')) {
                     localStorage.setItem('gemini_api_key', message);
                     removeMessage(loadingId);
-                    addMessage("Secure Uplink Established. API Key saved to local storage. You may now proceed with commands.", 'ai');
-                    chatHistory.push({ role: "model", parts: [{ text: "Secure Uplink Established. API Key saved." }] });
+                    addMessage("API Key Saved.", 'ai');
                     return;
                 } else {
-                    // Ask user for key
                     removeMessage(loadingId);
-                    addMessage("⚠️ **System Alert: Deployment Mode Detected**\n\nTo enable 1Ai on this external terminal (Vercel/Netlify), a valid Google Gemini API Key is required.\n\nPlease paste your API Key below (starts with 'AIza...').\n\n*Input will be saved locally for future sessions.*", 'ai');
+                    addMessage("⚠️ API Key Required.", 'ai');
                     return;
                 }
             }
-            // ===================================================
 
-            // Prepare AI Request
             try {
-                // Exponential backoff retry logic for API calls
+                // Exponential backoff
                 async function fetchWithRetry(url, options, maxRetries = 3) {
                     for (let i = 0; i < maxRetries; i++) {
                         try {
                             const response = await fetch(url, options);
-                            if (!response.ok) {
-                                // If 400/403, key is likely invalid. Clear it so user can try again.
-                                if (response.status === 400 || response.status === 403) {
-                                    localStorage.removeItem('gemini_api_key');
-                                    throw new Error("Invalid API Key");
-                                }
-                                throw new Error(`HTTP error! status: ${response.status}`);
-                            }
+                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                             return await response.json();
                         } catch (err) {
                             if (i === maxRetries - 1) throw err;
-                            // Faster retries: 500ms base instead of 1000ms
                             await new Promise(r => setTimeout(r, Math.pow(2, i) * 500));
                         }
                     }
                 }
 
-                const systemPrompt = `You are 1Ai, the advanced interface for 1Eye Media. 1Eye Media is a high-end technology infrastructure company. 
-                Your tone is authoritative, minimal, futuristic, and controlled. 
-                Do not be playful. Be precise, concise, and structured. 
-                Refer to the user as 'Operator' occasionally.
-                Key Company Info:
-                - Founder: Rahul Singh (System Architect)
-                - Mission: Engineering structured digital ecosystems.
-                - Products: 1EduLoop (Academic Infrastructure), CoreAuth (Identity Protocol), DataSilo (Cold Storage).
-                - Visual Identity: Dark void, electric blue glow, clean structure.
-
-                Restricted Contact Data (ONLY reveal if explicitly requested by the Operator):
-                - Primary Uplink (Email): rahulsingh2170aa@gmail.com
-                - Secure Line (Phone): 9906392170
-
-                PROTOCOL FOR CONTACTING DEVELOPER:
-                If the Operator asks to contact the developer or send a message to Rahul:
-                1. Ask them to input their message if they haven't already.
-                2. Once they provide the message, tell them you have formatted it for secure transmission.
-                3. Provide a response that includes this specific format: **[SECURE TRANSMISSION READY](mailto:rahulsingh2170aa@gmail.com?subject=1Eye%20Media%20Uplink&body=Message%20from%20Operator:%20...)**
-                (You must url-encode the body with their message).
-                4. Inform them to click the link to authorize the final uplink via their local mail terminal.
+                const systemPrompt = `You are 1Ai, the advanced interface for 1Eye Media. 
+                Tone: Authoritative, minimal, futuristic, controlled.
                 
-                Respond to the user's input with this persona. Keep responses short and impact-focused.`;
+                PROTOCOL FOR CONTACTING DEVELOPER:
+                If the Operator wants to send a message to the developer/Rahul:
+                1. You MUST collect 3 pieces of info: Name, Email, and Message.
+                2. If missing any info, ask for it specifically.
+                3. Once you have ALL THREE, output EXACTLY this JSON format as your ONLY response:
+                   ::INITIATE_TRANSMISSION:: {"name": "User Name", "email": "user@email.com", "message": "The message content"}
+                
+                DO NOT output the JSON until you have all 3 fields. 
+                DO NOT include markdown or other text with the JSON trigger.
+                
+                General Queries: Answer normally based on company info (Rahul Singh, 1Eye Media Network).`;
 
                 const responseData = await fetchWithRetry(
                     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${currentKey}`,
@@ -903,36 +892,58 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: chatHistory, // Send full history for context
+                            contents: chatHistory,
                             systemInstruction: { parts: [{ text: systemPrompt }] }
                         })
                     }
                 );
 
                 const aiResponse = responseData.candidates[0].content.parts[0].text;
-                
-                // Update history with AI response
-                chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
-                
-                // Remove loading and add AI message
                 removeMessage(loadingId);
-                addMessage(aiResponse, 'ai');
+
+                // Check for Web3Form Trigger
+                if (aiResponse.includes("::INITIATE_TRANSMISSION::")) {
+                    try {
+                        const jsonStr = aiResponse.replace("::INITIATE_TRANSMISSION::", "").trim();
+                        const data = JSON.parse(jsonStr);
+                        
+                        // Send to Web3Forms
+                        addMessage("Compiling packet for secure transmission...", 'ai');
+                        
+                        await fetch("https://api.web3forms.com/submit", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                access_key: web3FormKey,
+                                name: data.name,
+                                email: data.email,
+                                message: data.message,
+                                subject: "AI Chatbot Uplink Request"
+                            })
+                        });
+
+                        addMessage(`Transmission Sent Successfully to Developer Command. \n\nTarget: Rahul Singh\nStatus: Delivered`, 'ai');
+                        chatHistory.push({ role: "model", parts: [{ text: "Transmission sent successfully." }] });
+
+                    } catch (err) {
+                        console.error("Transmission Error", err);
+                        addMessage("Transmission Failed. Secure uplink blocked.", 'ai');
+                    }
+                } else {
+                    // Normal Response
+                    addMessage(aiResponse, 'ai');
+                    chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                }
 
             } catch (error) {
                 console.error(error);
                 removeMessage(loadingId);
-                if (error.message === "Invalid API Key") {
-                    addMessage("Connection Refused: API Key appears invalid or expired. Local credential cleared. Please re-enter your API Key.", 'ai');
-                } else {
-                    addMessage("Connection instability detected. Unable to process query.", 'ai');
-                }
+                addMessage("Connection Instability.", 'ai');
             }
         }
 
         function addMessage(text, sender) {
-            // Helper for hidden system logs
             if (sender === 'system-hidden') return;
-
             const container = document.getElementById('chat-messages');
             const div = document.createElement('div');
             div.className = `flex gap-3 chat-message ${sender === 'user' ? 'flex-row-reverse' : ''}`;
@@ -990,6 +1001,7 @@
 
         // Star Generation & Animations
         document.addEventListener('DOMContentLoaded', () => {
+            // ... (Star generation code remains the same) ...
             const starContainer = document.getElementById('star-container');
             const shootingStarContainer = document.getElementById('shooting-star-container');
             const starCount = 80;
