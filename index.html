@@ -771,6 +771,10 @@
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             provider = new GoogleAuthProvider();
+            // Set explicit Client ID
+            provider.setCustomParameters({
+                'client_id': '67283477593-9sc002ug0e95dbsl0dfga0r14qpili33.apps.googleusercontent.com'
+            });
         } catch (e) {
             console.error("Firebase Initialization Failed:", e);
         }
