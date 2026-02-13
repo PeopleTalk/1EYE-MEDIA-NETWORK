@@ -344,11 +344,32 @@
             </a>
 
             <!-- Desktop Menu -->
-            <div class="hidden md:flex items-center gap-10 text-sm font-light text-textsecondary tracking-widest uppercase">
+            <div class="hidden md:flex items-center gap-8 text-sm font-light text-textsecondary tracking-widest uppercase">
                 <a href="#home" class="nav-link hover:text-white transition-colors">Home</a>
                 <a href="#vision" class="nav-link hover:text-white transition-colors">Vision</a>
                 <a href="#products" class="nav-link hover:text-white transition-colors">Products</a>
                 <a href="#contact" class="nav-link hover:text-white transition-colors">Contact</a>
+                
+                <!-- Desktop Auth Section -->
+                <div id="auth-container-desktop" class="ml-4 pl-6 border-l border-white/10">
+                    <!-- Default Login Button -->
+                    <button id="login-btn-desktop" onclick="googleLogin()" class="flex items-center gap-2 px-4 py-2 border border-accent/30 rounded-sm hover:bg-accent/10 transition-all group">
+                        <i data-lucide="log-in" class="w-4 h-4 text-accent"></i>
+                        <span class="text-xs font-bold text-accent group-hover:text-white">Sign In</span>
+                    </button>
+
+                    <!-- User Profile (Hidden by default) -->
+                    <div id="user-profile-desktop" class="hidden flex items-center gap-3">
+                        <div class="text-right hidden lg:block">
+                            <div id="user-name-desktop" class="text-[10px] font-bold text-white leading-tight">User</div>
+                            <div class="text-[8px] text-accent">Authorized</div>
+                        </div>
+                        <img id="user-avatar-desktop" src="" alt="User" class="w-8 h-8 rounded-full border border-accent/50 p-0.5">
+                        <button onclick="googleLogout()" class="text-white/50 hover:text-red-400 transition-colors" title="Sign Out">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Mobile Menu Button -->
@@ -358,11 +379,23 @@
         </div>
 
         <!-- Mobile Menu Dropdown -->
-        <div id="mobile-menu" class="hidden md:hidden absolute w-full bg-void border-b border-white/10 p-6 flex flex-col gap-4 text-center">
+        <div id="mobile-menu" class="hidden md:hidden absolute w-full bg-void border-b border-white/10 p-6 flex flex-col gap-4 text-center z-50">
             <a href="#home" class="text-textsecondary hover:text-accent">Home</a>
             <a href="#vision" class="text-textsecondary hover:text-accent">Vision</a>
             <a href="#products" class="text-textsecondary hover:text-accent">Products</a>
             <a href="#contact" class="text-textsecondary hover:text-accent">Contact</a>
+            
+            <!-- Mobile Auth -->
+            <div class="pt-4 border-t border-white/10 flex flex-col items-center">
+                <button id="login-btn-mobile" onclick="googleLogin()" class="flex items-center gap-2 text-accent uppercase tracking-widest text-xs font-bold">
+                    <i data-lucide="log-in" class="w-4 h-4"></i> Sign In With Google
+                </button>
+                <div id="user-profile-mobile" class="hidden flex-col items-center gap-2">
+                    <img id="user-avatar-mobile" src="" alt="User" class="w-10 h-10 rounded-full border border-accent">
+                    <span id="user-name-mobile" class="text-sm text-white font-bold"></span>
+                    <button onclick="googleLogout()" class="text-xs text-red-400 mt-2 uppercase tracking-widest">Sign Out</button>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -640,15 +673,124 @@
     </div>
 
     <!-- Scripts -->
-    <script>
+    <script type="module">
+        // Import Firebase Functions
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+
+        // Firebase Configuration (Handles both Preview and Deployed environments)
+        let firebaseConfig;
+        
+        // 1. Check if we are in the Preview Environment (global variable exists)
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            // 2. Fallback for Deployment (User must replace this object)
+            // REPLACE THE OBJECT BELOW WITH YOUR FIREBASE PROJECT CONFIG FOR VERCEL DEPLOYMENT
+            firebaseConfig = {
+                apiKey: "YOUR_API_KEY",
+                authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+                projectId: "YOUR_PROJECT_ID",
+                storageBucket: "YOUR_PROJECT_ID.appspot.com",
+                messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+                appId: "YOUR_APP_ID"
+            };
+            console.warn("Using placeholder Firebase config. Authentication will fail unless config is updated.");
+        }
+
+        // Initialize Firebase
+        let app, auth, provider;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            provider = new GoogleAuthProvider();
+        } catch (e) {
+            console.error("Firebase Initialization Failed:", e);
+        }
+
+        // --- AUTH FUNCTIONS (Attached to window for HTML onclick access) ---
+
+        window.googleLogin = async () => {
+            if (!auth) {
+                alert("Auth system offline. Check console configuration.");
+                return;
+            }
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Login failed", error);
+                alert("Login failed: " + error.message);
+            }
+        };
+
+        window.googleLogout = async () => {
+            if (!auth) return;
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Logout failed", error);
+            }
+        };
+
+        // --- AUTH STATE LISTENER ---
+        if (auth) {
+            onAuthStateChanged(auth, (user) => {
+                const loginBtnDesktop = document.getElementById('login-btn-desktop');
+                const userProfileDesktop = document.getElementById('user-profile-desktop');
+                const userAvatarDesktop = document.getElementById('user-avatar-desktop');
+                const userNameDesktop = document.getElementById('user-name-desktop');
+                
+                const loginBtnMobile = document.getElementById('login-btn-mobile');
+                const userProfileMobile = document.getElementById('user-profile-mobile');
+                const userAvatarMobile = document.getElementById('user-avatar-mobile');
+                const userNameMobile = document.getElementById('user-name-mobile');
+
+                if (user) {
+                    // User is signed in
+                    const photo = user.photoURL || 'https://via.placeholder.com/40';
+                    const name = user.displayName || 'User';
+
+                    // Update Desktop UI
+                    if(loginBtnDesktop) loginBtnDesktop.classList.add('hidden');
+                    if(userProfileDesktop) userProfileDesktop.classList.remove('hidden');
+                    if(userAvatarDesktop) userAvatarDesktop.src = photo;
+                    if(userNameDesktop) userNameDesktop.textContent = name;
+
+                    // Update Mobile UI
+                    if(loginBtnMobile) loginBtnMobile.classList.add('hidden');
+                    if(userProfileMobile) userProfileMobile.classList.remove('hidden');
+                    if(userProfileMobile) userProfileMobile.classList.add('flex');
+                    if(userAvatarMobile) userAvatarMobile.src = photo;
+                    if(userNameMobile) userNameMobile.textContent = name;
+                    
+                    // Optional: Inform Chatbot
+                    addMessage(`User Authorized: ${name}`, 'system-hidden'); 
+
+                } else {
+                    // User is signed out
+                    // Update Desktop UI
+                    if(loginBtnDesktop) loginBtnDesktop.classList.remove('hidden');
+                    if(userProfileDesktop) userProfileDesktop.classList.add('hidden');
+
+                    // Update Mobile UI
+                    if(loginBtnMobile) loginBtnMobile.classList.remove('hidden');
+                    if(userProfileMobile) userProfileMobile.classList.add('hidden');
+                    if(userProfileMobile) userProfileMobile.classList.remove('flex');
+                }
+            });
+        }
+
+        // --- CHATBOT LOGIC (Moved inside Module) ---
+        
         // Initialize Icons
         lucide.createIcons();
 
-        // Chatbot Logic
         let isChatOpen = false;
         const apiKey = "AIzaSyB2UzyD34_cdl5JJJ9yG5nlgyj1xr8TULI"; // API Key injected
+        let chatHistory = []; // Initialize chat history for context
 
-        function toggleChat() {
+        // Expose toggle function
+        window.toggleChat = function() {
             const chatWindow = document.getElementById('chat-window');
             const chatInput = document.getElementById('chat-input');
             isChatOpen = !isChatOpen;
@@ -663,7 +805,8 @@
             }
         }
 
-        async function handleChatSubmit(e) {
+        // Expose submit function
+        window.handleChatSubmit = async function(e) {
             e.preventDefault();
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
@@ -672,6 +815,9 @@
             // Add User Message
             addMessage(message, 'user');
             input.value = '';
+            
+            // Add user message to history
+            chatHistory.push({ role: "user", parts: [{ text: message }] });
 
             // Add Loading Indicator
             const loadingId = addLoadingIndicator();
@@ -691,6 +837,7 @@
                     localStorage.setItem('gemini_api_key', message);
                     removeMessage(loadingId);
                     addMessage("Secure Uplink Established. API Key saved to local storage. You may now proceed with commands.", 'ai');
+                    chatHistory.push({ role: "model", parts: [{ text: "Secure Uplink Established. API Key saved." }] });
                     return;
                 } else {
                     // Ask user for key
@@ -738,6 +885,14 @@
                 Restricted Contact Data (ONLY reveal if explicitly requested by the Operator):
                 - Primary Uplink (Email): rahulsingh2170aa@gmail.com
                 - Secure Line (Phone): 9906392170
+
+                PROTOCOL FOR CONTACTING DEVELOPER:
+                If the Operator asks to contact the developer or send a message to Rahul:
+                1. Ask them to input their message if they haven't already.
+                2. Once they provide the message, tell them you have formatted it for secure transmission.
+                3. Provide a response that includes this specific format: **[SECURE TRANSMISSION READY](mailto:rahulsingh2170aa@gmail.com?subject=1Eye%20Media%20Uplink&body=Message%20from%20Operator:%20...)**
+                (You must url-encode the body with their message).
+                4. Inform them to click the link to authorize the final uplink via their local mail terminal.
                 
                 Respond to the user's input with this persona. Keep responses short and impact-focused.`;
 
@@ -747,13 +902,16 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: message }] }],
+                            contents: chatHistory, // Send full history for context
                             systemInstruction: { parts: [{ text: systemPrompt }] }
                         })
                     }
                 );
 
                 const aiResponse = responseData.candidates[0].content.parts[0].text;
+                
+                // Update history with AI response
+                chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
                 
                 // Remove loading and add AI message
                 removeMessage(loadingId);
@@ -771,6 +929,9 @@
         }
 
         function addMessage(text, sender) {
+            // Helper for hidden system logs
+            if (sender === 'system-hidden') return;
+
             const container = document.getElementById('chat-messages');
             const div = document.createElement('div');
             div.className = `flex gap-3 chat-message ${sender === 'user' ? 'flex-row-reverse' : ''}`;
@@ -783,8 +944,10 @@
                 ? 'bg-white/5 border border-white/5 text-gray-200'
                 : 'bg-accent/20 border border-accent/20 text-white';
 
-            // Support basic markdown-like bolding for system messages
-            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            let formattedText = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-accent underline hover:text-white transition-colors">$1</a>')
+                .replace(/\n/g, '<br>');
 
             div.innerHTML = `
                 ${iconHtml}
@@ -824,21 +987,19 @@
             if (el) el.remove();
         }
 
-        // Star Generation
+        // Star Generation & Animations
         document.addEventListener('DOMContentLoaded', () => {
             const starContainer = document.getElementById('star-container');
             const shootingStarContainer = document.getElementById('shooting-star-container');
-            const starCount = 80; // Minimal count for cleaner look
+            const starCount = 80;
 
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
                 star.classList.add('star');
-                
-                // Random positioning
                 const x = Math.random() * 100;
                 const y = Math.random() * 100;
-                const size = Math.random() * 2 + 1; // 1px to 3px
-                const duration = Math.random() * 3 + 2; // 2s to 5s
+                const size = Math.random() * 2 + 1;
+                const duration = Math.random() * 3 + 2;
                 const delay = Math.random() * 5;
                 const opacity = Math.random() * 0.5 + 0.3;
 
@@ -853,44 +1014,30 @@
                 starContainer.appendChild(star);
             }
 
-            // Shooting Stars Logic
             function spawnShootingStar() {
                 const star = document.createElement('div');
                 star.classList.add('shooting-star');
-                
-                // Random position: Favor top-right area to fall across screen
                 const startX = Math.random() * (window.innerWidth + 200);
-                const startY = Math.random() * (window.innerHeight * 0.4); // Start in top 40%
+                const startY = Math.random() * (window.innerHeight * 0.4);
                 
                 star.style.left = `${startX}px`;
                 star.style.top = `${startY}px`;
                 
-                // Randomize animation duration (speed)
                 const duration = 1.5 + Math.random() * 2; 
                 star.style.animation = `shoot ${duration}s linear forwards`;
 
                 shootingStarContainer.appendChild(star);
-
-                // Cleanup DOM after animation
-                setTimeout(() => {
-                    star.remove();
-                }, duration * 1000 + 100);
+                setTimeout(() => { star.remove(); }, duration * 1000 + 100);
             }
 
-            // Interval for shooting stars
             setInterval(() => {
-                // Spawn a star roughly every 2-4 seconds if tab is active
                 if (!document.hidden && Math.random() > 0.4) {
                     spawnShootingStar();
                 }
             }, 2500);
 
             // Scroll Reveal Observer
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: "0px"
-            };
-
+            const observerOptions = { threshold: 0.1, rootMargin: "0px" };
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
