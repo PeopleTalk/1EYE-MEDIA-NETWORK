@@ -489,10 +489,10 @@
     </section>
 
     <!-- Vision Section -->
-    <section id="vision" class="py-24 md:py-32 relative z-10">
+    <section id="vision" class="py-24 md:py-32 relative z-10 overflow-hidden">
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-                <div class="reveal">
+                <div class="reveal relative z-20">
                     <h2 class="font-display text-3xl md:text-5xl font-bold mb-8">THE VOID REQUIRES <br/><span class="text-accent">STRUCTURE</span></h2>
                     <div class="w-20 h-[1px] bg-accent mb-8"></div>
                     <p class="text-textsecondary text-lg leading-relaxed mb-6">
@@ -503,19 +503,27 @@
                     </p>
                 </div>
                 
-                <!-- Abstract Visual -->
-                <div class="relative h-[400px] w-full border border-white/10 bg-white/[0.02] flex items-center justify-center reveal transition-all delay-200">
-                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-30"></div>
-                    <!-- Central Ring Animation -->
-                    <div class="relative w-64 h-64">
-                        <div class="absolute inset-0 border border-accent/20 rounded-full animate-spin-slow"></div>
-                        <div class="absolute inset-4 border border-white/10 rounded-full animate-spin-slow" style="animation-direction: reverse;"></div>
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <div class="w-2 h-2 bg-accent rounded-full shadow-[0_0_20px_#00bfff]"></div>
+                <!-- Abstract Visual / Elon Musk Inspiration -->
+                <div class="relative h-[500px] w-full flex flex-col items-center justify-center reveal transition-all delay-200">
+                    
+                    <!-- Ambient Glow behind image -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+                    <!-- Main Composition Wrapper -->
+                    <!-- Added translate-y-12 to lower the image relative to text -->
+                    <div class="relative z-10 flex flex-col items-center justify-center translate-y-12">
+                        
+                        <!-- Image (Z-Index above rings) -->
+                        <img src="https://i.ibb.co/x8YGMLZ5/Gemini-Generated-Image-e7mq0fe7mq0fe7mq-Photoroom.png" alt="Visionary Inspiration" class="relative z-20 h-64 md:h-80 w-auto object-contain drop-shadow-[0_0_35px_rgba(0,191,255,0.15)]">
+                        
+                        <!-- Inspiration Message (Themed Text Only) -->
+                        <div class="mt-8 relative z-20 text-center">
+                            <p class="text-[10px] font-display font-bold uppercase tracking-[0.3em] text-accent/80 flex items-center justify-center gap-2">
+                                <span class="w-1 h-1 bg-accent rounded-full"></span>
+                                Inspired by the vision of Elon Musk
+                                <span class="w-1 h-1 bg-accent rounded-full"></span>
+                            </p>
                         </div>
-                        <!-- Orbiting particles -->
-                        <div class="absolute top-1/2 left-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-accent/20 to-transparent -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
-                        <div class="absolute top-1/2 left-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-accent/20 to-transparent -translate-x-1/2 -translate-y-1/2 -rotate-45"></div>
                     </div>
                 </div>
             </div>
